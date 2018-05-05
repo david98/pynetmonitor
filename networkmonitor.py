@@ -7,8 +7,7 @@ import sys
 import time
 
 import apiserver
-import iperfmonitor
-import latencymonitor
+from classes import iperfmonitor, latencymonitor
 
 LATENCY_DUMMY = 9999
 DEFAULT_PORT = 8081
