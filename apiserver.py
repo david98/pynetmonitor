@@ -4,8 +4,7 @@ import json
 import queue
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
-
-data = {}
+from sys import exit
 
 
 # HTTPRequestHandler class
@@ -18,16 +17,13 @@ class RequestHandler(BaseHTTPRequestHandler):
         # return socket.getfqdn(host)
         return host
 
-    def get_data(self):
-        if self.dataQueue.empty():
-            if self.lastData is None:
-                while self.dataQueue.empty():
-                    pass
-                self.lastData = self.dataQueue.get()
-        else:
-            self.lastData = self.dataQueue.get()
-
-        return self.lastData
+    def refresh_data(self):
+        try:
+            latestData = json.dumps(self.dataQueue.get(False))
+            if len(latestData) > 10:
+                self.lastData = latestData
+        except queue.Empty:
+            pass
 
     # GET
     def do_GET(self):
@@ -39,8 +35,11 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'application/json')
         self.end_headers()
 
+        self.refresh_data()
+
         # Send message back to client
-        message = json.dumps(self.get_data())
+        message = self.lastData
+
         # Write content as utf-8 data
         self.wfile.write(bytes(message, "utf8"))
         return
@@ -63,7 +62,7 @@ class APIServer(threading.Thread):
 
         self.httpd = None
 
-        self.dataQueue = queue.Queue(50)
+        self.dataQueue = queue.LifoQueue(50)
 
     def run(self):
         # Server settings
@@ -71,3 +70,8 @@ class APIServer(threading.Thread):
         server_address = ('127.0.0.1', self.port)
         self.httpd = MyHTTPServer(server_address, RequestHandler)
         self.httpd.serve_forever(self.dataQueue)
+
+    def stop(self):
+        if self.httpd:
+            self.httpd.shutdown()
+        exit(0)

@@ -38,7 +38,8 @@ class IperfMonitor(threading.Thread):
 
     def run(self):
         while self.running:
-            self.resultQueue.put(self.client.run())
+            result = self.client.run()
+            self.resultQueue.put(result)
             del self.client
             self.new_client()
 
@@ -48,3 +49,4 @@ class IperfMonitor(threading.Thread):
 
     def stop(self):
         self.running = False
+        exit(0)
