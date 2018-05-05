@@ -9,4 +9,4 @@ python networkmonitor.py <local iperf server> <port> <a remote host>
 
 # Logs
 The program will create a *./logs* folder if it doesn't already exist. 
-Inside you will find a *result-<when the test started>* file for each test with all the infos about that particular test run.
+Inside you will find a *result-**when the test started>*** file for each test with all the infos about that particular test run.
