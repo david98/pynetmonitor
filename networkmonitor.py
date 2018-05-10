@@ -56,6 +56,8 @@ else:
     localDownBandValues = []
     localRTTValues = []
     remoteRTTValues = []
+    localFailedPings = 0
+    remoteFailedPings = 0
 
     averageLocalDown = 0.0
     averageLocalUp = 0.0
@@ -87,9 +89,14 @@ else:
                 if localCurrentRTT == 'NO ANSWER':
                     averageLocalRTT = LATENCY_DUMMY
                     localRTTValues.append(LATENCY_DUMMY)
+                    localFailedPings = localFailedPings + 1
                 else:
                     localRTTValues.append(localCurrentRTT)
-                    averageLocalRTT = localCurrentRTT
+            else:
+                if localCurrentRTT == 'NO ANSWER':
+                    localRTTValues.append(LATENCY_DUMMY)
+                else:
+                    localRTTValues.append(localCurrentRTT)
 
             averageLocalRTT = sum(localRTTValues) / len(localRTTValues)
 
@@ -97,10 +104,14 @@ else:
                 if remoteCurrentRTT == 'NO ANSWER':
                     averageRemoteRTT = LATENCY_DUMMY
                     remoteRTTValues.append(LATENCY_DUMMY)
+                    remoteFailedPings = remoteFailedPings + 1
                 else:
                     remoteRTTValues.append(remoteCurrentRTT)
             else:
-                remoteRTTValues.append(remoteCurrentRTT)
+                if remoteCurrentRTT == 'NO ANSWER':
+                    remoteRTTValues.append(LATENCY_DUMMY)
+                else:
+                    remoteRTTValues.append(remoteCurrentRTT)
 
             averageRemoteRTT = sum(remoteRTTValues) / len(remoteRTTValues)
 
@@ -152,10 +163,12 @@ else:
             logContent = str(
                 "LOCAL iperf SERVER: {7} on port {8}\n\nAverage Local Download Speed: {0:.2f} Mbps\n"
                 "Average Local Upload Speed: {1:.2f} Mbps\nAverage Local "
-                "Latency: {2:.2f} ms\n\nREMOTE HOST: {9}\nAverage Remote Latency: {3:.2f} ms\n\n"
+                "Latency: {2:.2f} ms\nFailed pings count: {10:d}\n\nREMOTE HOST: {9}"
+                "\nAverage Remote Latency: {3:.2f} ms"
+                "\nFailed pings count: {11:d}\n\n"
                 "TEST DURATION: {4:02d}h {5:02d}m {6:02d}s".format(
                     averageLocalDown, averageLocalUp, averageLocalRTT, averageRemoteRTT, int(h), int(m), int(s),
-                    localServer, localPort, remoteHost))
+                    localServer, localPort, remoteHost, localFailedPings, remoteFailedPings))
             log_to_file(LOGS_DIRECTORY, fileName, logContent)
 
         except KeyboardInterrupt:

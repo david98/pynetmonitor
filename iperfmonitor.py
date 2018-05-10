@@ -1,5 +1,6 @@
 import queue
 import threading
+import time
 
 import iperf3
 
@@ -7,6 +8,8 @@ TEST_DURATION = 5
 
 
 class IperfMonitor(threading.Thread):
+
+    TIME_BETWEEN_TESTS = 5
 
     def __init__(self, server, port, mode='tcp'):
         threading.Thread.__init__(self)
@@ -28,6 +31,7 @@ class IperfMonitor(threading.Thread):
         self.running = False
 
     def new_client(self):
+        time.sleep(self.TIME_BETWEEN_TESTS)
         self.client = iperf3.Client()
         self.client.server_hostname = self.server
         self.client.port = self.port

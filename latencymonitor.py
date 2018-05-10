@@ -10,7 +10,7 @@ import multiping
 
 class LatencyMonitor(threading.Thread):
     PING_TIMEOUT = 5
-    TIME_BETWEEN_PINGS = 2
+    TIME_BETWEEN_PINGS = 6
     QUEUE_SIZE = 50
 
     def __init__(self, localAddress, remoteAddress=None):
@@ -44,6 +44,7 @@ class LatencyMonitor(threading.Thread):
         self.running = False
 
     def new_mp(self):
+        time.sleep(self.TIME_BETWEEN_PINGS)
         if self.remoteAddress:
             self.mp = multiping.MultiPing([self.localAddress, self.remoteAddress])
         else:
@@ -51,6 +52,7 @@ class LatencyMonitor(threading.Thread):
 
     def run(self):
         while self.running:
+
             self.mp.send()
             responses, no_responses = self.mp.receive(self.PING_TIMEOUT)
 
@@ -61,15 +63,12 @@ class LatencyMonitor(threading.Thread):
                     self.remoteRTTQueue.put(rtt * 1000)
 
             if no_responses:
-                print(no_responses)
                 if self.localAddress in no_responses:
                     self.localRTTQueue.put('NO ANSWER')
                 if self.remoteAddress in no_responses:
                     self.remoteRTTQueue.put('NO ANSWER')
             else:
                 self.new_mp()
-
-            time.sleep(self.TIME_BETWEEN_PINGS)
 
         return
 
